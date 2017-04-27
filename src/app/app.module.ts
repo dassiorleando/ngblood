@@ -1,3 +1,4 @@
+import { EsriMapService } from './esri-map/esri-map.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +7,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { EsriMapComponent } from './esri-map/esri-map.component';
 import { EsriLoaderService } from 'angular2-esri-loader';
+
 
 @NgModule({
   declarations: [
@@ -17,7 +19,7 @@ import { EsriLoaderService } from 'angular2-esri-loader';
     FormsModule,
     HttpModule
   ],
-  providers: [EsriLoaderService],
+  providers: [EsriLoaderService, EsriMapService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
