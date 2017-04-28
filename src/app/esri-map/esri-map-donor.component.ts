@@ -1,11 +1,15 @@
-import { SocketIoService } from './socket.service';
-import { EsriMapService } from './esri-map.service';
+import { Component, OnInit, ViewChild, ElementRef,
+         Inject, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
 
 // also import the "angular2-esri-loader" to be able to load JSAPI modules
 import { EsriLoaderService } from 'angular2-esri-loader';
 import {MdDialog, MdDialogConfig, MdDialogRef, MD_DIALOG_DATA} from '@angular/material';
+import {ToasterService} from 'angular2-toaster';
+
+import { SocketIoService } from './socket.service';
+import { EsriMapService } from './esri-map.service';
+import {CustomPoint} from './esri-map-point.component';
 
 @Component({
   selector: 'app-esri-map-donor',
@@ -29,8 +33,9 @@ export class EsriMapDonorComponent implements OnInit {
     private esriLoader: EsriLoaderService,
     private esriMapService: EsriMapService,
     private dialog: MdDialog,
-    private router: Router
-  ) { }
+    private socketIoService: SocketIoService,
+    private router: Router) {
+   }
 
   registerModal(config) {
     // We open the modal and close it after successfully save the donor
@@ -133,21 +138,22 @@ export class DonorRegisterDialog {
       public dialogRef: MdDialogRef<DonorRegisterDialog>,
       @Inject(MD_DIALOG_DATA) public data: any,
       private esriMapService: EsriMapService,
-      private socketIoService: SocketIoService) {
+      private socketIoService: SocketIoService,
+      private toasterService: ToasterService) {
         data.contact = {};
     }
 
      // Action record a blood donor
      shareBlood(){
        this.esriMapService.postPoint(this.data).subscribe(savedPoint => {
-        console.log(savedPoint);
         // We close the modal once the data is saved
         if(savedPoint){
           this.socketIoService.emitEventOnBloodSaved(savedPoint); // Emit event
           this.dialogRef.close('closed');
         }else{
           // On error, tell the user to try gain
-          alert('Try your request again');
+          this.toasterService.pop('error', 'ERROR WHEN SHARING BLOOD',
+          'An error occured when sharing your blood, please try again');
         }
       });
      }

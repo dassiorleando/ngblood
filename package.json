@@ -24,6 +24,7 @@
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
     "angular2-esri-loader": "^0.1.11",
+    "angular2-toaster": "^3.0.1",
     "body-parser": "^1.17.1",
     "core-js": "^2.4.1",
     "esri-loader": "^0.3.1",

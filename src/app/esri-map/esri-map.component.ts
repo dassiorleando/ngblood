@@ -1,3 +1,4 @@
+import { CustomPoint } from './esri-map-point.component';
 import { SocketIoService } from './socket.service';
 import { EsriMapService } from './esri-map.service';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
@@ -24,8 +25,14 @@ export class EsriMapComponent implements OnInit {
     private esriMapService: EsriMapService,
     private socketIoService: SocketIoService
   ) { 
-    this.socketIoService.emitEventOnBloodSaved({name: 'Dassi', age: 23}); // Emit event
+    
     this.socketIoService.consumeEvenOnBloodSaved(); // consume it
+    this.socketIoService.pointShared$.subscribe(point => this.onPointShared(point));
+  }
+
+  onPointShared(newPoint: CustomPoint){
+    console.log('We add this point to the map now');
+    console.log(newPoint); // We add this point to the map now
   }
 
   public ngOnInit() {
@@ -148,11 +155,6 @@ export class EsriMapComponent implements OnInit {
         // Request the earthquake data from USGS when the view resolves
         self.esriMapService.getAllPoints()
           .subscribe(points => {
-          /* var points = [
-            {latitude: -50, longitude: 50, blood_type: "B", contact:{email: 'dassi@yahoo.fr', name: "Dassi Orleando"}}, 
-            {latitude: -49.97, longitude: 41.73, blood_type: "A", contact:{email: 'orleando@yahoo.fr', name: "Sajou Orleando"}}
-            ]; */
-
           // Computed geo points
           var geos = points.map(function(point) { 
             var geo = {
@@ -187,6 +189,7 @@ export class EsriMapComponent implements OnInit {
             popupTemplate: pTemplate
           });
 
+          console.log(lyr.source);
           map.add(lyr);
         });
       });

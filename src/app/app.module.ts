@@ -15,6 +15,7 @@ import { EsriLoaderService } from 'angular2-esri-loader';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import 'hammerjs';
+import {ToasterModule} from 'angular2-toaster';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import 'hammerjs';
     HttpModule,
     MaterialModule,
     BrowserAnimationsModule,
+    ToasterModule,
     RouterModule.forRoot([
       {
         path: '', // Patient state

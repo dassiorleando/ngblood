@@ -1,13 +1,22 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
+import {CustomPoint} from './esri-map-point.component';
 import * as io from 'socket.io-client';
+import {ToasterService} from 'angular2-toaster';
 
 @Injectable()
 export class SocketIoService {
-  private host: string = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
+  public pointShared$: EventEmitter<CustomPoint>;
+  private lastPoint: CustomPoint = null;
   private socket: SocketIOClient.Socket; // The client instance of socket.io
 
-  constructor() {
+  constructor(private toasterService: ToasterService) {
     this.socket = io();
+    this.pointShared$ = new EventEmitter();
+  }
+
+  public add(item: CustomPoint): void {
+    this.lastPoint = item;
+    this.pointShared$.emit(item);
   }
 
   // Emit blood saved
@@ -17,8 +26,13 @@ export class SocketIoService {
 
   // Consume blood saved to update 
   consumeEvenOnBloodSaved(){
+    var self = this;
     this.socket.on('bloodSaved', function(blood){
-      console.log(blood);
+      self.toasterService.pop('success', 'NEW BLOOD SHARED', 
+          'A blood of type ' + blood.blood_type + ' has just been shared');
+      self.add(new CustomPoint(blood.longitude, blood.latitude,
+          blood.contact.firstName, blood.contact.lastName, blood.contact.phoneNumber, 
+          blood.contact.email, blood.blood_type));
     });
   }
 }
