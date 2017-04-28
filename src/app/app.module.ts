@@ -1,3 +1,4 @@
+import { SocketIoService } from './esri-map/socket.service';
 import { EsriMapService } from './esri-map/esri-map.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -39,7 +40,7 @@ import 'hammerjs';
       }
     ])
   ],
-  providers: [EsriLoaderService, EsriMapService],
+  providers: [EsriLoaderService, EsriMapService, SocketIoService],
   bootstrap: [AppComponent],
   entryComponents: [DonorRegisterDialog]
 })

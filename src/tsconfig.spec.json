@@ -9,7 +9,9 @@
       "jasmine",
       "node",
       "arcgis-js-api",
-      "hammerjs"
+      "hammerjs", 
+      "socket.io-client", 
+      "socket.io"
     ]
   },
   "files": [
