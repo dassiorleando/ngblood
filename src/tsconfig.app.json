@@ -4,7 +4,7 @@
     "outDir": "../out-tsc/app",
     "module": "es2015",
     "baseUrl": "",
-    "types": ["arcgis-js-api"]
+    "types": ["arcgis-js-api", "hammerjs"]
   },
   "exclude": [
     "test.ts",

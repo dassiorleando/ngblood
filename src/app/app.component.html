@@ -1,4 +1,21 @@
-<h1 class="middle">
-  {{title}}
-</h1>
-<app-esri-map></app-esri-map>
+<md-toolbar color="primary">
+    <span class="middle">{{title}}</span>
+
+    <span class="spacer"></span>
+
+    <button md-icon-button [mdMenuTriggerFor]="menu">
+      <md-icon>more_vert</md-icon>
+    </button>
+
+    <md-menu #menu="mdMenu">
+      <button md-menu-item routerLink="/donor">
+        <span>Donor</span>
+      </button>
+      <button md-menu-item routerLink="/">
+        <md-icon>announcement</md-icon>
+        <span>Patient</span>
+      </button>
+    </md-menu>
+</md-toolbar>
+
+<router-outlet></router-outlet>
