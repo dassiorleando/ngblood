@@ -1,0 +1,42 @@
+<md-card class="demo-dialog-card">
+  <md-card-content>
+    <h2>Donor Position</h2>
+
+    <p>
+      <md-input-container>
+        <input mdInput [(ngModel)]="data.latitude" placeholder="Latitude" disabled>
+      </md-input-container>
+      <md-input-container>
+        <input mdInput [(ngModel)]="data.longitude" placeholder="Longitude" disabled>
+      </md-input-container>
+    </p>
+
+    <h2>Donor Details</h2>
+
+    <p>
+      <md-input-container>
+        <input mdInput [(ngModel)]="data.contact.firstName" placeholder="First Name" required>
+      </md-input-container>
+      <md-input-container>
+        <input mdInput [(ngModel)]="data.contact.lastName" placeholder="Last Name" required>
+      </md-input-container>
+      <md-input-container>
+        <input mdInput [(ngModel)]="data.contact.phoneNumber" placeholder="Phone Number" required>
+      </md-input-container>
+      <md-input-container>
+        <input type="email" mdInput [(ngModel)]="data.contact.email" placeholder="Email" required>
+      </md-input-container>
+    </p>
+
+    <p>
+      <md-select placeholder="Blood type" [(ngModel)]="data.blood_type">
+          <md-option *ngFor="let bType of blood_types" [value]="bType">
+            {{bType}}
+          </md-option>
+      </md-select>
+    </p>
+
+    <button md-button (click)="dialogRef.close('yes')">Cancel</button>
+    <button md-raised-button (click)="shareBlood()">Share</button>
+  </md-card-content>
+</md-card>

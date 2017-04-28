@@ -1,0 +1,111 @@
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+
+// also import the "angular2-esri-loader" to be able to load JSAPI modules
+import { EsriLoaderService } from 'angular2-esri-loader';
+
+@Component({
+  selector: 'app-esri-map',
+  templateUrl: './esri-map.component.html',
+  styleUrls: ['./esri-map.component.css']
+})
+export class EsriMapComponent implements OnInit {
+
+  // for JSAPI 4.x you can use the "any for TS types
+  public mapView: __esri.MapView;
+
+  // this is needed to be able to create the MapView at the DOM element in this component
+  @ViewChild('mapViewNode') private mapViewEl: ElementRef;
+
+  constructor(
+    private esriLoader: EsriLoaderService
+  ) { }
+
+  public ngOnInit() {
+    // only load the ArcGIS API for JavaScript when this component is loaded
+    return this.esriLoader.load({
+      // use a specific version of the JSAPI
+      url: 'https://js.arcgis.com/4.3/'
+    }).then(() => {
+      // load the needed Map and MapView modules from the JSAPI
+      this.esriLoader.loadModules([
+        'esri/Map',
+        'esri/views/MapView',
+        'esri/Graphic',
+        'esri/geometry/Point',
+        'esri/symbols/SimpleMarkerSymbol',
+        'esri/Color',
+        'esri/layers/GraphicsLayer',
+        'esri/core/Collection',
+        'esri/geometry/SpatialReference'
+      ]).then(([Map, MapView, Graphic, Point, SimpleMarkerSymbol, Color, GraphicsLayer, Collection, SpatialReference
+      ]: [ __esri.MapConstructor, __esri.MapViewConstructor, __esri.GraphicConstructor,
+           __esri.PointConstructor, __esri.SimpleMarkerSymbolConstructor, __esri.ColorConstructor,
+           __esri.GraphicsLayerConstructor, __esri.CollectionConstructor, __esri.SpatialReferenceConstructor]) => {
+        
+        const mapProperties: __esri.MapProperties = {
+          basemap: 'topo'
+        };
+
+        // The Spatial reference to use
+        var spatialReferenceProp: __esri.SpatialReferenceProperties = {
+          wkid: 4326
+        }
+        // var spatialReference = new SpatialReference(spatialReferenceProp);
+
+        // Create a simple point
+        // create a new Point
+        var pointProperties: __esri.PointProperties = {
+          latitude: 41.73,
+          longitude: -49.97
+        };
+        // var point = new Point(pointProperties);
+
+        // Marker symbol
+        var lineProp: __esri.SimpleLineSymbolProperties = {
+          color: new Color([255, 255, 255]),
+          width: 12          
+        }
+
+        const markerSymbolProperties: __esri.SimpleMarkerSymbolProperties = {
+          color: new Color('#000000'),
+          style: 'circle',
+          size: 12,
+          outline: lineProp
+        }
+
+        var graphLayer = new GraphicsLayer();
+
+        var graphicProperties: __esri.GraphicProperties = {
+          geometry: pointProperties,
+          symbol: markerSymbolProperties,
+          layer: graphLayer
+        }
+        var pointGraphic = new Graphic(graphicProperties); // A constructed point
+        pointGraphic.layer = graphLayer;
+        // var points = new Collection();
+        // points.add(pointGraphic);
+
+        // var graphicsLayerProp: __esri.GraphicsLayerProperties = {
+          // graphics: points
+        // }
+        
+        var map = new Map(mapProperties);
+        map.add(graphLayer);
+
+        const mapViewProperties: __esri.MapViewProperties = {
+          // create the map view at the DOM element in this component
+          container: this.mapViewEl.nativeElement,
+          // supply additional options
+          center: [-80, 35],
+          zoom: 3,
+          map // property shorthand for object literal
+        };
+
+        this.mapView = new MapView(mapViewProperties);
+        // this.mapView.graphics.addMany(points);
+        // console.log(this.mapView);
+      });
+    });
+  }
+
+}
