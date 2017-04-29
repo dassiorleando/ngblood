@@ -1,4 +1,4 @@
-# 1. Initialize and run ngBlood
+# 1. Initialize and run ngBlood: https://github.com/dassiorleando/ngblood
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.0.1.
 
