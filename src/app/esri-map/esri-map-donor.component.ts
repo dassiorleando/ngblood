@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef,
          Inject, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router} from '@angular/router';
 
 // also import the "angular2-esri-loader" to be able to load JSAPI modules
 import { EsriLoaderService } from 'angular2-esri-loader';
@@ -44,7 +44,6 @@ export class EsriMapDonorComponent implements OnInit {
       if(result != null){
         dialogRef = null;
         this.popup.close();
-        this.router.navigate(['/']);
       }
     });
   }
@@ -128,12 +127,18 @@ export class EsriMapDonorComponent implements OnInit {
 @Component({
   selector: 'donor-register-dialog',
   templateUrl: './esri-map-donor-register.component.html',
+  styleUrls: ['./esri-map-donor-register.component.css']
 })
 export class DonorRegisterDialog {
     // All available blood type
     blood_types = [
       'A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'
     ];
+    edited: boolean = true;
+    currentLocation = window.location;
+    pointId:number = null;
+    uniqueUrl:string = "";
+
     constructor(
       public dialogRef: MdDialogRef<DonorRegisterDialog>,
       @Inject(MD_DIALOG_DATA) public data: any,
@@ -145,12 +150,18 @@ export class DonorRegisterDialog {
 
      // Action record a blood donor
      shareBlood(){
+       var self = this;
        this.esriMapService.postPoint(this.data).subscribe(savedPoint => {
         // We close the modal once the data is saved
         if(savedPoint){
           this.socketIoService.emitEventOnBloodSaved(savedPoint); // Emit event
-          this.dialogRef.close('closed');
+          self.edited = true;
+          this.pointId = savedPoint._id;
+          this.uniqueUrl = this.currentLocation.protocol + '//' + this.currentLocation.hostname
+          + ':' + this.currentLocation.port + '/point/' + this.pointId;
+          // this.dialogRef.close('closed');
         }else{
+          self.edited = false;
           // On error, tell the user to try gain
           this.toasterService.pop('error', 'ERROR WHEN SHARING BLOOD',
           'An error occured when sharing your blood, please try again');

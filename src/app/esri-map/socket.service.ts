@@ -24,15 +24,28 @@ export class SocketIoService {
       this.socket.emit('bloodSaved', pointSaved);
   }
 
+  emitEventOnBloodUpdated(pointUpdated){
+    this.socket.emit('bloodUpdated', pointUpdated);
+  }
+
   // Consume blood saved to update 
   consumeEvenOnBloodSaved(){
     var self = this;
     this.socket.on('bloodSaved', function(blood){
       self.toasterService.pop('success', 'NEW BLOOD SHARED', 
-          'A blood of type ' + blood.blood_type + ' has just been shared');
+          'A blood of type ' + blood.blood_type + ' has just been shared' + ' at ' + blood.address);
       self.add(new CustomPoint(blood.longitude, blood.latitude,
           blood.contact.firstName, blood.contact.lastName, blood.contact.phoneNumber, 
-          blood.contact.email, blood.blood_type));
+          blood.contact.email, blood.blood_type, blood.address));
+    });
+  }
+
+  // Consume on blood updated 
+  consumeEvenOnBloodUpdated(){
+    var self = this;
+    this.socket.on('bloodSaved', function(blood){
+      self.toasterService.pop('success', 'BLOOD UPDATED', 
+          'A blood of type ' + blood.blood_type + ' has just been updated' + ' at ' + blood.address);
     });
   }
 }

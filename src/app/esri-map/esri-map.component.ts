@@ -35,6 +35,7 @@ export class EsriMapComponent implements OnInit {
   ) { 
     
     this.socketIoService.consumeEvenOnBloodSaved(); // consume it
+    this.socketIoService.consumeEvenOnBloodUpdated(); // consume it
     this.socketIoService.pointShared$.subscribe(point => this.onPointShared(point));
   }x
 
@@ -82,8 +83,80 @@ export class EsriMapComponent implements OnInit {
       })});
   }
 
+/**
+ * Custom esri actions to display phone and email
+ */
+  setupHandlerToDisplayPhoneAndMail(){
+      // We trigge all esri actions and get the right one to display info with
+      this.mapView.popup.on('trigger-action', (event) => {
+        /* If the show-email action is clicked, the following code executes  */
+        if (event.action.id === 'show-email') {
+          if(this.selectedGraphic){
+            let config = new MdDialogConfig(); // Data to send to modal: map point
+            config.data = this.selectedGraphic.attributes.email;
+
+            // We setup the toast with donor's email
+            var toast :Toast = {
+                type: 'info',
+                title: 'Donor Email',
+                body: this.selectedGraphic.attributes.email,
+                showCloseButton: true
+            };
+            this.toasterService.pop(toast);
+          }
+        }
+
+        /* If the show-phone action is clicked, the following code executes  */
+        if (event.action.id === 'show-phone') {
+          if(this.selectedGraphic){
+            let config = new MdDialogConfig(); // Data to send to modal: map point
+            config.data = this.selectedGraphic.attributes.phoneNumber;
+
+            // We setup the toast with donor's phone
+            var toast :Toast = {
+                type: 'info',
+                title: 'Donor Phone',
+                body: this.selectedGraphic.attributes.phoneNumber,
+                showCloseButton: true
+            };
+            this.toasterService.pop(toast);
+          }
+        }
+      });
+  }
+
+  /**
+   * On click on the map view we select the corresponding Graphic point
+   * with all his details
+   */
+  onClickOnMapView(){
+    var self = this;
+    this.mapView.on("click", function(evt) {
+        // The screen point
+        var screenPoint = {
+          x: evt.x,
+          y: evt.y
+        };
+
+        // Get the corresponding graphic
+        self.mapView.hitTest(screenPoint)
+          .then(function(response){
+            // do something with the result graphic
+            var graphic = response.results[0].graphic;
+            self.selectedGraphic = graphic;
+          });
+        });
+  }
+
+  // Init method fired when the component is just instantiated
   public ngOnInit() {
     var self = this;
+
+    // Get all points from our MongoDB serve via express
+      self.esriMapService.getAllPoints().subscribe(points => {
+        self.points = points;
+      });
+
     // only load the ArcGIS API for JavaScript when this component is loaded
     return this.esriLoader.load({
       // use a specific version of the JSAPI
@@ -100,12 +173,12 @@ export class EsriMapComponent implements OnInit {
       ]).then(([Map, MapView, Point,
                 SimpleMarkerSymbol, FeatureLayer, SimpleRenderer]) => {
         
-        
-
+        // The map          
         self.map = new Map({
           basemap: "dark-gray"
         });
 
+       // The map view to show layer and geo points 
        self.mapView = new MapView({
         center: [-80, 35],
         container: self.mapViewEl.nativeElement,
@@ -113,14 +186,15 @@ export class EsriMapComponent implements OnInit {
         zoom: 3
       });
 
-      // Setup event on the Graphic to display phone number and email: Start
-      // Custom actions to show email and phone number
+      // Setup actions on the Graphic to display phone number and email: Start
+      // Custom actions to show email
       var displayEmailAction = {
           // This text is displayed as a tool tip
           title: 'Show Email',
           id: 'show-email',
           className: 'fa fa-envelope'
       };
+      // Custom actions to show phone number
       var displayPhoneNumberAction = {
           // This text is displayed as a tool tip
           title: 'Show Phone',
@@ -128,57 +202,16 @@ export class EsriMapComponent implements OnInit {
           className: 'fa fa-phone'
       };
 
-      // self.mapView.popup.actions.push(displayEmailAction);
-      // self.mapView.popup.actions.push(displayPhoneNumberAction);
-
-      // Event handler that fires each time an action is clicked
-      self.mapView.popup.on('trigger-action', (event) => {
-        /* If the zoom-out action is clicked, the following code executes  */
-        if (event.action.id === 'show-email') {
-          if(self.selectedGraphic){
-            let config = new MdDialogConfig(); // Data to send to modal: map point
-            config.data = this.selectedGraphic.attributes.email;
-
-            // We toast the info of the record a donor
-            var toast :Toast = {
-                type: 'info',
-                title: 'Donor Email',
-                body: self.selectedGraphic.attributes.email,
-                showCloseButton: true
-                // closeHtml: '<button>Close</button>'
-            };
-            this.toasterService.pop(toast);
-          }
-        }
-
-        if (event.action.id === 'show-phone') {
-          if(self.selectedGraphic){
-            let config = new MdDialogConfig(); // Data to send to modal: map point
-            config.data = self.selectedGraphic.attributes.phoneNumber;
-
-            // We toast the phone of donor
-            var toast :Toast = {
-                type: 'info',
-                title: 'Donor Phone',
-                body: self.selectedGraphic.attributes.phoneNumber,
-                showCloseButton: true
-            };
-            this.toasterService.pop(toast);
-          }
-        }
-      });
+      // Trigge email and phone actions
+      this.setupHandlerToDisplayPhoneAndMail();
       // Setup event on the Graphic to display phone number and email: End
-
-      // Get all points
-      self.esriMapService.getAllPoints().subscribe(points => {
-        self.points = points;
-      });
 
       /**************************************************
        * Define the specification for each field to create
        * in the layer
        **************************************************/
 
+       // Fields to manage
       var fields = [
       {
         name: "ObjectID",
@@ -196,9 +229,13 @@ export class EsriMapComponent implements OnInit {
         name: "lastName",
         alias: "Last Name",
         type: "string"
+      }, {
+        name: "address",
+        alias: "Address",
+        type: "string"
       }];
 
-      // Set up popup template for the layer
+      // Set up popup template for the points layer and override default action in the UI
       var pTemplate = {
         title: "{title}",
         content: [{
@@ -215,6 +252,10 @@ export class EsriMapComponent implements OnInit {
             fieldName: "lastName",
             label: "Last Name",
             visible: true
+          }, {
+            fieldName: "address",
+            label: "Address",
+            visible: true
           }]
         }],
         actions: [displayEmailAction, displayPhoneNumberAction],
@@ -227,6 +268,7 @@ export class EsriMapComponent implements OnInit {
         }]
       };
 
+      // When the map view instantiated we fill info on it with markers
       self.mapView.then(function() {
         var quakesRenderer = new SimpleRenderer({
         symbol: new SimpleMarkerSymbol({
@@ -241,61 +283,47 @@ export class EsriMapComponent implements OnInit {
         })
       });
 
-      self.mapView.on("click", function(evt) {
-        var screenPoint = {
-          x: evt.x,
-          y: evt.y
-        };
+      self.onClickOnMapView();
 
-        self.mapView.hitTest(screenPoint)
-          .then(function(response){
-            console.log(response);
-            // do something with the result graphic
-            var graphic = response.results[0].graphic;
-            console.log(graphic);
-            self.selectedGraphic = graphic;
-          });
-        });
-
-        // Request the earthquake data from USGS when the view resolves
-        self.esriMapService.getAllPoints()
-          .subscribe(points => {
-          // Computed geo points
-          var geos = points.map(function(point) { 
-            var geo = {
-              geometry: new Point({
-                x: point.longitude,
-                y: point.latitude
-              }),
-              // select only the attributes you care about
-              attributes: {
-                // ObjectID: i,
-                blood: point.blood_type,
-                firstName: point.contact.firstName,
-                lastName: point.contact.lastName,
-                phoneNumber: point.contact.phoneNumber,
-                email: point.contact.email
-              }
+      // Request the earthquake data from USGS when the view resolves
+      self.esriMapService.getAllPoints()
+        .subscribe(points => {
+        // Build graphic point with attributes to display
+        var geos = points.map(function(point) {
+          var geo = {
+            geometry: new Point({
+              x: point.longitude,
+              y: point.latitude
+            }),
+            // select only the attributes you care about
+            attributes: {
+              blood: point.blood_type,
+              firstName: point.contact.firstName,
+              lastName: point.contact.lastName,
+              phoneNumber: point.contact.phoneNumber,
+              email: point.contact.email,
+              address: point.contact.address
             }
+          }
 
-            return geo;
-          });
-
-          self.lyr = new FeatureLayer({
-            source: geos, // autocast as an array of esri/Graphic
-            // create an instance of esri/layers/support/Field for each field object
-            fields: fields, // This is required when creating a layer from Graphics
-            objectIdField: "ObjectID", // This must be defined when creating a layer from Graphics
-            renderer: quakesRenderer, // set the visualization on the layer
-            spatialReference: {
-              wkid: 4326
-            },
-            geometryType: "point", // Must be set when creating a layer from Graphics
-            popupTemplate: pTemplate
-          });
-
-          self.map.add(self.lyr);
+          return geo;
         });
+
+        self.lyr = new FeatureLayer({
+          source: geos, // autocast as an array of esri/Graphic
+          // create an instance of esri/layers/support/Field for each field object
+          fields: fields, // This is required when creating a layer from Graphics
+          objectIdField: "ObjectID", // This must be defined when creating a layer from Graphics
+          renderer: quakesRenderer, // set the visualization on the layer
+          spatialReference: {
+            wkid: 4326
+          },
+          geometryType: "point", // Must be set when creating a layer from Graphics
+          popupTemplate: pTemplate
+        });
+
+        self.map.add(self.lyr);
+      });
       });
 
     });

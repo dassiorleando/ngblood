@@ -1,36 +1,59 @@
 const express = require('express');
 const router = express.Router();
 var status = require('http-status');
-
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/ngblood');
-
 var Point = require('../models/point');
 
 
+/* GET a point by his ID. */
+router.get('/point/:pointId', (req, res) => {
+  var pointId = req.params.pointId;
 
+  // Check first if it is a valid Id
+  if (!mongoose.Types.ObjectId.isValid(pointId)) {
+    return res.status(400).send({
+      message: 'Point Id is invalid'
+    });
+  }
 
-
-/* GET all saved points. */
-router.get('/', (req, res) => {
-  console.log("Get all shared blood");
-
-  Point.find({}, function(err, points) {
+  Point.findById(pointId, function(err, pointFounded) {
     if (err) return res.status(err.status).json(err);
 
-    // object of all the points
-    res.status(status.OK).json(points);
+    // We serve as json the point founded
+    res.status(status.OK).json(pointFounded);
+  });
+});
+/* POST: save a new point with donor details. */
+router.post('/point/update', (req, res) => {
+  var data = req.body;
+  var id = data._id;
+
+  // Properties to update on an exiting point
+  var pointDataTopUpdate = {
+    blood_type: data.blood_type,
+    contact: {
+      firstName: data.contact.firstName,
+      lastName: data.contact.lastName,
+      phoneNumber: data.contact.phoneNumber,
+      email: data.contact.email,
+      address: data.contact.address
+    }
+  };
+
+  // find the user with id :id
+  // all others properties but not position and Ip
+  Point.findByIdAndUpdate(id, pointDataTopUpdate, function(err, point) {
+    if (err) return res.status(err.status).json(err);
+
+    // The point has been updated
+    res.status(status.OK).json(point);
   });
 });
 
-
-
 /* POST all saved points. */
 router.post('/byMapPoint', (req, res) => {
-  console.log("Get a shared point");
   var body = req.body;
-  console.log('Map data for request');
-  console.log(body);
 
   Point.find({'latitude': body.latitude, 'longitude': body.longitude}, function(err, points) {
     if (err) return res.status(err.status).json(err);
@@ -40,13 +63,8 @@ router.post('/byMapPoint', (req, res) => {
   });
 });
 
-
-
 /* POST: save a new point with donor details. */
 router.post('/', (req, res) => {
-  console.log("Share blood request");
-  console.log(req.body);      // your JSON
-
   var data = req.body;
   // create a new point
   var newPoint = Point({
@@ -57,14 +75,15 @@ router.post('/', (req, res) => {
       firstName: data.contact.firstName,
       lastName: data.contact.lastName,
       phoneNumber: data.contact.phoneNumber,
-      email: data.contact.email
+      email: data.contact.email,
+      address: data.contact.address,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
     }
   });
 
   // save the point
   newPoint.save(function(err, point) {
     if (err) return res.status(err.status).json(err);
-    console.log('Point created!');
 
     // res.setHeader('Content-Type', 'application/json');
     res.status(status.OK).json(point);
@@ -72,5 +91,14 @@ router.post('/', (req, res) => {
 
 });
 
+/* GET all saved points. */
+router.get('/', (req, res) => {
+  Point.find({}, function(err, points) {
+    if (err) return res.status(err.status).json(err);
+
+    // object of all the points
+    res.status(status.OK).json(points);
+  });
+});
 
 module.exports = router;

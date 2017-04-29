@@ -13,6 +13,12 @@ export class EsriMapService {
       .map(res => res.json());
   }
 
+  // Get a point by Id
+  getPointById(pointId){
+    return this.http.get('/api/point/' + pointId)
+      .map(res => res.json());
+  }
+
   // Get point by mapping(x & y)
   getPointByMapping(mapPoint){
     return this.http.post('/api/byMapPoint', mapPoint)
@@ -22,6 +28,12 @@ export class EsriMapService {
   // register a new donor: share blood
   postPoint(point){
     return this.http.post('/api', point)
+      .map(res => res.json());
+  }
+
+  // update a point
+  updatePoint(pointDataToUpdate){
+    return this.http.post('/api/point/update', pointDataToUpdate)
       .map(res => res.json());
   }
 }

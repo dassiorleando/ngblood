@@ -12,6 +12,10 @@ var pointSchema = new Schema({
       type: String,
       required: true
   },
+  longitude: {
+      type: String,
+      required: true
+  },
   contact: {
     firstName: {
       type: String,
@@ -28,6 +32,13 @@ var pointSchema = new Schema({
     email: {
       type: String,
       required: true
+    },
+    address: {
+      type: String,
+      required: true
+    },
+    ip: {
+      type: String
     }
   },
   blood_type: String,

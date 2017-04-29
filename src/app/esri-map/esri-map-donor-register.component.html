@@ -1,42 +1,49 @@
-<md-card class="demo-dialog-card">
+<md-card class="card-width">
   <md-card-content>
-    <h2>Donor Position</h2>
+    <div class="example-form" [hidden]="!edited">
+      <h2>Donor Position</h2>
 
-    <p>
-      <md-input-container>
-        <input mdInput [(ngModel)]="data.latitude" placeholder="Latitude" disabled>
-      </md-input-container>
-      <md-input-container>
-        <input mdInput [(ngModel)]="data.longitude" placeholder="Longitude" disabled>
-      </md-input-container>
-    </p>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.latitude" name=latitude placeholder="Latitude" disabled>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.longitude" name="longitude" placeholder="Longitude" disabled>
+        </md-input-container>
 
-    <h2>Donor Details</h2>
+      <h2>Donor Details</h2>
 
-    <p>
-      <md-input-container>
-        <input mdInput [(ngModel)]="data.contact.firstName" placeholder="First Name" required>
-      </md-input-container>
-      <md-input-container>
-        <input mdInput [(ngModel)]="data.contact.lastName" placeholder="Last Name" required>
-      </md-input-container>
-      <md-input-container>
-        <input mdInput [(ngModel)]="data.contact.phoneNumber" placeholder="Phone Number" required>
-      </md-input-container>
-      <md-input-container>
-        <input type="email" mdInput [(ngModel)]="data.contact.email" placeholder="Email" required>
-      </md-input-container>
-    </p>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.contact.firstName" name="firstName" placeholder="First Name" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.contact.lastName" name="lastName" placeholder="Last Name" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.contact.phoneNumber" name="phoneNumber" placeholder="Phone Number" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input type="email" mdInput [(ngModel)]="data.contact.email" name="email" placeholder="Email" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="data.contact.address" name="address" placeholder="Address" required>
+        </md-input-container>
 
-    <p>
-      <md-select placeholder="Blood type" [(ngModel)]="data.blood_type">
-          <md-option *ngFor="let bType of blood_types" [value]="bType">
-            {{bType}}
-          </md-option>
-      </md-select>
-    </p>
+        <md-select placeholder="Blood type" [(ngModel)]="data.blood_type">
+            <md-option *ngFor="let bType of blood_types" [value]="bType">
+              {{bType}}
+            </md-option>
+        </md-select>
 
-    <button md-button (click)="dialogRef.close('yes')">Cancel</button>
-    <button md-raised-button (click)="shareBlood()">Share</button>
+      <div layout="row" layout-align="start center">
+          <button md-button (click)="dialogRef.close('yes')">Cancel</button>
+          <button md-raised-button (click)="shareBlood()">Share</button>
+      </div>
+    </div>
+
+    <div [hidden]="edited">
+      The unique url to access and edit your share is via this link:
+      <a ng-href="uniqueUrl">{{currentLocation.protocol}}//{{currentLocation.hostname}}:{{currentLocation.port}}/point/{{pointId}}</a>
+      <a [href]="uniqueUrl">{{currentLocation.protocol}}//{{currentLocation.hostname}}:{{currentLocation.port}}/point/{{pointId}}</a>
+    </div>
   </md-card-content>
 </md-card>

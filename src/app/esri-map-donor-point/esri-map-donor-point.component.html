@@ -1,0 +1,43 @@
+<md-card class="card-width">
+  <md-card-content>
+    <div class="example-form">
+      <h2>Donor Position</h2>
+
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.latitude" name=latitude placeholder="Latitude" disabled>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.longitude" name="longitude" placeholder="Longitude" disabled>
+        </md-input-container>
+
+      <h2>Donor Details</h2>
+
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.contact.firstName" placeholder="First Name" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.contact.lastName" name="lastName" placeholder="Last Name" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.contact.phoneNumber" name="phoneNumber" placeholder="Phone Number" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input type="email" mdInput [(ngModel)]="point.contact.email" name="email" placeholder="Email" required>
+        </md-input-container>
+        <md-input-container class="form-full-width">
+          <input mdInput [(ngModel)]="point.contact.address" name="address" placeholder="Address" required>
+        </md-input-container>
+
+        <md-select placeholder="Blood type" [(ngModel)]="point.blood_type">
+            <md-option *ngFor="let bType of blood_types" [value]="bType">
+              {{bType}}
+            </md-option>
+        </md-select>
+
+      <div layout="row" layout-align="start center">
+          <button md-button (click)="goToIndex()">Cancel</button>
+          <button md-raised-button (click)="updateCurrentPoint()">Update</button>
+      </div>
+    </div>
+  </md-card-content>
+</md-card>

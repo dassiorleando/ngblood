@@ -16,13 +16,15 @@ import { EsriLoaderService } from 'angular2-esri-loader';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import 'hammerjs';
 import {ToasterModule} from 'angular2-toaster';
+import { EsriMapDonorPointComponent } from './esri-map-donor-point/esri-map-donor-point.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     EsriMapComponent,
     EsriMapDonorComponent,
-    DonorRegisterDialog
+    DonorRegisterDialog,
+    EsriMapDonorPointComponent
   ],
   imports: [
     BrowserModule,
@@ -39,6 +41,10 @@ import {ToasterModule} from 'angular2-toaster';
       {
         path: 'donor',  // Donor state
         component: EsriMapDonorComponent
+      },
+      {
+        path: 'point/:pointId',  // For the donor to edit his share(update or delete it)
+        component: EsriMapDonorPointComponent
       }
     ])
   ],
