@@ -43,8 +43,8 @@ export class SocketIoService {
   // Consume on blood updated 
   consumeEvenOnBloodUpdated(){
     var self = this;
-    this.socket.on('bloodSaved', function(blood){
-      self.toasterService.pop('success', 'BLOOD UPDATED', 
+    this.socket.on('bloodUpdated', function(blood){
+      self.toasterService.pop('info', 'BLOOD UPDATED', 
           'A blood of type ' + blood.blood_type + ' has just been updated' + ' at ' + blood.address);
     });
   }

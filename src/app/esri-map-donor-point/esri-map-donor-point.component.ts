@@ -43,7 +43,7 @@ export class EsriMapDonorPointComponent implements OnInit {
    * Update the current point
    */
   updateCurrentPoint(){
-    this.esriMapService.postPoint(this.point).subscribe(updatedPoint => {
+    this.esriMapService.updatePoint(this.point).subscribe(updatedPoint => {
       if(updatedPoint){
         this.point = updatedPoint;
         this.socketIoService.emitEventOnBloodUpdated(updatedPoint); // Emit event

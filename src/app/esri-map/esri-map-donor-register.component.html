@@ -1,6 +1,6 @@
 <md-card class="card-width">
   <md-card-content>
-    <div class="example-form" [hidden]="!edited">
+    <div class="example-form" *ngIf="!edited">
       <h2>Donor Position</h2>
 
         <md-input-container class="form-full-width">
@@ -40,9 +40,8 @@
       </div>
     </div>
 
-    <div [hidden]="edited">
+    <div *ngIf="edited">
       The unique url to access and edit your share is via this link:
-      <a ng-href="uniqueUrl">{{currentLocation.protocol}}//{{currentLocation.hostname}}:{{currentLocation.port}}/point/{{pointId}}</a>
       <a [href]="uniqueUrl">{{currentLocation.protocol}}//{{currentLocation.hostname}}:{{currentLocation.port}}/point/{{pointId}}</a>
     </div>
   </md-card-content>

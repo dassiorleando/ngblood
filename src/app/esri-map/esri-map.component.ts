@@ -35,14 +35,11 @@ export class EsriMapComponent implements OnInit {
   ) { 
     
     this.socketIoService.consumeEvenOnBloodSaved(); // consume it
-    this.socketIoService.consumeEvenOnBloodUpdated(); // consume it
     this.socketIoService.pointShared$.subscribe(point => this.onPointShared(point));
   }x
 
   onPointShared(newPoint: CustomPoint){
     var self = this;
-    console.log('We add this point to the map now');
-    console.log(newPoint); // We add this point to the map now
 
     const pointProperties:__esri.PointProperties = {
       longitude: newPoint.longitude,
@@ -79,7 +76,6 @@ export class EsriMapComponent implements OnInit {
           addFeatures: [new Graphic(g)]
         };
         self.lyr.applyEdits(edits);
-        // self.map.add(self.lyr);
       })});
   }
 

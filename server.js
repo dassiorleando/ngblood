@@ -46,8 +46,13 @@ server.listen(port, () => console.log(`API running on localhost:${port}`));
  */
 io.sockets.on('connection', function(socket){
   console.log('Socket connected');
-  socket.on('bloodSaved', function(msg){
-    console.log(msg);
-    io.emit('bloodSaved', msg);
+  // Socket event for blood shared
+  socket.on('bloodSaved', function(pointSaved){
+    io.emit('bloodSaved', pointSaved);
+  });
+
+  // Socket event for blood updated
+  socket.on('bloodUpdated', function(pointUpdated){
+    io.emit('bloodUpdated', pointUpdated);
   });
 });
