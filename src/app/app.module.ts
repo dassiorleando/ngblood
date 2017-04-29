@@ -9,7 +9,7 @@ import { RouterModule }   from '@angular/router';
 import { MaterialModule } from '@angular/material';
 
 import { AppComponent } from './app.component';
-import { EsriMapComponent } from './esri-map/esri-map.component';
+import {EsriMapComponent } from './esri-map/esri-map.component';
 import { DonorRegisterDialog, EsriMapDonorComponent } from './esri-map/esri-map-donor.component';
 import { EsriLoaderService } from 'angular2-esri-loader';
 

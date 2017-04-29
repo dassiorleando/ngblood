@@ -1,10 +1,13 @@
+import { Toast, ToasterService } from 'angular2-toaster';
 import { CustomPoint } from './esri-map-point.component';
 import { SocketIoService } from './socket.service';
 import { EsriMapService } from './esri-map.service';
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
 
 // also import the "angular2-esri-loader" to be able to load JSAPI modules
 import { EsriLoaderService } from 'angular2-esri-loader';
+
+import {MdDialog, MdDialogConfig, MdDialogRef, MD_DIALOG_DATA} from '@angular/material';
 
 @Component({
   selector: 'app-esri-map',
@@ -15,6 +18,9 @@ export class EsriMapComponent implements OnInit {
 
   // for JSAPI 4.x you can use the "any for TS types
   public mapView: __esri.MapView;
+  public map: __esri.Map;
+  public lyr:__esri.FeatureLayer;
+  private selectedGraphic:any = null;
   points: any = []; // List of all points
   
   // this is needed to be able to create the MapView at the DOM element in this component
@@ -23,19 +29,61 @@ export class EsriMapComponent implements OnInit {
   constructor(
     private esriLoader: EsriLoaderService,
     private esriMapService: EsriMapService,
-    private socketIoService: SocketIoService
+    private socketIoService: SocketIoService,
+    private dialog: MdDialog,
+      private toasterService: ToasterService
   ) { 
     
     this.socketIoService.consumeEvenOnBloodSaved(); // consume it
     this.socketIoService.pointShared$.subscribe(point => this.onPointShared(point));
-  }
+  }x
 
   onPointShared(newPoint: CustomPoint){
+    var self = this;
     console.log('We add this point to the map now');
     console.log(newPoint); // We add this point to the map now
+
+    const pointProperties:__esri.PointProperties = {
+      longitude: newPoint.longitude,
+      latitude: newPoint.latitude
+    }
+
+    // only load the ArcGIS API for JavaScript when this component is loaded
+    return self.esriLoader.load({
+      // use a specific version of the JSAPI
+      url: 'https://js.arcgis.com/4.3/'
+    }).then(() => {
+      // load the needed Map and MapView modules from the JSAPI
+      self.esriLoader.loadModules([
+        'esri/Graphic',
+        'esri/geometry/Point'
+        ]).then(([Graphic, Point]) => {
+
+        let g = {
+          geometry: new Point({
+            longitude: newPoint.longitude,
+            latitude: newPoint.latitude
+
+          }),
+          attributes: {
+            blood: newPoint.blood_type,
+            firstName: newPoint.firstName,
+            lastName: newPoint.lastName,
+            phoneNumber: newPoint.phoneNumber,
+            email: newPoint.email
+          }
+        }
+
+        var edits = {
+          addFeatures: [new Graphic(g)]
+        };
+        self.lyr.applyEdits(edits);
+        // self.map.add(self.lyr);
+      })});
   }
 
   public ngOnInit() {
+    var self = this;
     // only load the ArcGIS API for JavaScript when this component is loaded
     return this.esriLoader.load({
       // use a specific version of the JSAPI
@@ -52,23 +100,78 @@ export class EsriMapComponent implements OnInit {
       ]).then(([Map, MapView, Point,
                 SimpleMarkerSymbol, FeatureLayer, SimpleRenderer]) => {
         
-        var self = this;
-        var lyr;
+        
 
-        var map = new Map({
+        self.map = new Map({
           basemap: "dark-gray"
         });
 
-       this.mapView = new MapView({
+       self.mapView = new MapView({
         center: [-80, 35],
-        container: this.mapViewEl.nativeElement,
-        map: map,
+        container: self.mapViewEl.nativeElement,
+        map: self.map,
         zoom: 3
       });
 
+      // Setup event on the Graphic to display phone number and email: Start
+      // Custom actions to show email and phone number
+      var displayEmailAction = {
+          // This text is displayed as a tool tip
+          title: 'Show Email',
+          id: 'show-email',
+          className: 'fa fa-envelope'
+      };
+      var displayPhoneNumberAction = {
+          // This text is displayed as a tool tip
+          title: 'Show Phone',
+          id: 'show-phone',
+          className: 'fa fa-phone'
+      };
+
+      // self.mapView.popup.actions.push(displayEmailAction);
+      // self.mapView.popup.actions.push(displayPhoneNumberAction);
+
+      // Event handler that fires each time an action is clicked
+      self.mapView.popup.on('trigger-action', (event) => {
+        /* If the zoom-out action is clicked, the following code executes  */
+        if (event.action.id === 'show-email') {
+          if(self.selectedGraphic){
+            let config = new MdDialogConfig(); // Data to send to modal: map point
+            config.data = this.selectedGraphic.attributes.email;
+
+            // We toast the info of the record a donor
+            var toast :Toast = {
+                type: 'info',
+                title: 'Donor Email',
+                body: self.selectedGraphic.attributes.email,
+                showCloseButton: true
+                // closeHtml: '<button>Close</button>'
+            };
+            this.toasterService.pop(toast);
+          }
+        }
+
+        if (event.action.id === 'show-phone') {
+          if(self.selectedGraphic){
+            let config = new MdDialogConfig(); // Data to send to modal: map point
+            config.data = self.selectedGraphic.attributes.phoneNumber;
+
+            // We toast the phone of donor
+            var toast :Toast = {
+                type: 'info',
+                title: 'Donor Phone',
+                body: self.selectedGraphic.attributes.phoneNumber,
+                showCloseButton: true
+            };
+            this.toasterService.pop(toast);
+          }
+        }
+      });
+      // Setup event on the Graphic to display phone number and email: End
+
       // Get all points
-      this.esriMapService.getAllPoints().subscribe(points => {
-        this.points = points;
+      self.esriMapService.getAllPoints().subscribe(points => {
+        self.points = points;
       });
 
       /**************************************************
@@ -93,14 +196,6 @@ export class EsriMapComponent implements OnInit {
         name: "lastName",
         alias: "Last Name",
         type: "string"
-      }, {
-        name: "phoneNumber",
-        alias: "Phone Number",
-        type: "string"
-      }, {
-        name: "email",
-        alias: "email",
-        type: "string"
       }];
 
       // Set up popup template for the layer
@@ -120,16 +215,10 @@ export class EsriMapComponent implements OnInit {
             fieldName: "lastName",
             label: "Last Name",
             visible: true
-          }, {
-            fieldName: "phoneNumber",
-            label: "Phone Number",
-            visible: true
-          }, {
-            fieldName: "email",
-            label: "Email",
-            visible: true
           }]
         }],
+        actions: [displayEmailAction, displayPhoneNumberAction],
+        overwriteActions: true,
         fieldInfos: [{
           fieldName: "time",
           format: {
@@ -151,6 +240,22 @@ export class EsriMapComponent implements OnInit {
           }
         })
       });
+
+      self.mapView.on("click", function(evt) {
+        var screenPoint = {
+          x: evt.x,
+          y: evt.y
+        };
+
+        self.mapView.hitTest(screenPoint)
+          .then(function(response){
+            console.log(response);
+            // do something with the result graphic
+            var graphic = response.results[0].graphic;
+            console.log(graphic);
+            self.selectedGraphic = graphic;
+          });
+        });
 
         // Request the earthquake data from USGS when the view resolves
         self.esriMapService.getAllPoints()
@@ -176,7 +281,7 @@ export class EsriMapComponent implements OnInit {
             return geo;
           });
 
-          lyr = new FeatureLayer({
+          self.lyr = new FeatureLayer({
             source: geos, // autocast as an array of esri/Graphic
             // create an instance of esri/layers/support/Field for each field object
             fields: fields, // This is required when creating a layer from Graphics
@@ -189,8 +294,7 @@ export class EsriMapComponent implements OnInit {
             popupTemplate: pTemplate
           });
 
-          console.log(lyr.source);
-          map.add(lyr);
+          self.map.add(self.lyr);
         });
       });
 

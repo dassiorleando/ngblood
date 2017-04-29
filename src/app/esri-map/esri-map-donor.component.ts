@@ -99,7 +99,7 @@ export class EsriMapDonorComponent implements OnInit {
           // This text is displayed as a tool tip
           title: 'Donate Blood',
           id: 'donate-blood',
-          className: 'esri-icon-locked'
+          className: 'esri-icon-plus'
         };
 
         // Adds the action to the view's default popup.
